@@ -31,7 +31,7 @@ public class WikipediaDriver extends Configured implements Tool {
 		Job job = new Job(getConf());
 		
 		job.setJarByClass(this.getClass());
-		job.setJobName("Wikipedia: convert sequence files text files");
+		job.setJobName("Wikipedia: Inverted Index");
 		
 		FileInputFormat.addInputPath(job, new Path("enwiki.block/part-m-00000"));
 		FileOutputFormat.setOutputPath(job, new Path("enwiki.invertedindex"));
