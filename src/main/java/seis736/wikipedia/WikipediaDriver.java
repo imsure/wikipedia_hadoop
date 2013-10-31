@@ -1,11 +1,13 @@
 package seis736.wikipedia;
 
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -32,14 +34,20 @@ public class WikipediaDriver extends Configured implements Tool {
 		job.setJobName("Wikipedia: convert sequence files text files");
 		
 		FileInputFormat.addInputPath(job, new Path("enwiki.block/part-m-00000"));
-		FileOutputFormat.setOutputPath(job, new Path("enwiki.titles"));
+		FileOutputFormat.setOutputPath(job, new Path("enwiki.invertedindex"));
+		FileOutputFormat.setCompressOutput(job, true);
+		FileOutputFormat.setOutputCompressorClass(job, SnappyCodec.class);
+		SequenceFileOutputFormat.setOutputCompressionType(job, CompressionType.BLOCK);
 		
 		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setMapperClass(SeqFile2TextFileMapper.class);
-		job.setNumReduceTasks(0); // A mapper only job
+		job.setMapperClass(InvertedIndexMapper.class);
+		job.setNumReduceTasks(1); // A mapper only job
 		
-		job.setMapOutputKeyClass(IntWritable.class);
-		job.setMapOutputValueClass(Text.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(TfWritable.class);
+		
+		job.setOutputKeyClass(IdfWritable.class);
+		job.setOutputValueClass(TfArrayWritable.class);
 		
 		return job.waitForCompletion(true) ? 0 : -1;
 	}
