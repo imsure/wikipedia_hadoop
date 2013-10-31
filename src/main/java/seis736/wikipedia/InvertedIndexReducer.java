@@ -31,5 +31,6 @@ public class InvertedIndexReducer extends Reducer<Text, TfWritable, IdfWritable,
 		idfwritable.setIdf((float)idf);
 		
 		tfarray.set((TfWritable[])tf_list.toArray());
+		context.write(idfwritable, tfarray);
 	}
 }
